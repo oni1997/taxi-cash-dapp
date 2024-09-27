@@ -76,3 +76,5 @@ For any inquiries or issues, feel free to reach out:
 
 - **Name**: Onesmus
 - **Email**: [dzidzaimaenza@gmail.com](mailto:dzidzaimaenza@gmail.com)
+
+- **Name**: Stanley Chapo
