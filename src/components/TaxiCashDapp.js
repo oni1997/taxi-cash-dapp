@@ -2,10 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import TaxiCashABI from '../abis/TaxiCash.json';
 import { Button, TextField, Card, CardContent, Typography, Box, Alert, Dialog, DialogTitle, DialogContent } from '@mui/material';
-import { QRCodeCanvas } from 'qrcode.react';
 import '../App.css';
 
-const contractAddress = '0x625B60928c1FaE4f779820A889e80586BDD054De';
+const contractAddress = '0x0D5570E53d609d51b1B4f2cAFe7fA6C4b2345bCC';
 const contractABI = TaxiCashABI;
 
 const TaxiCashDapp = () => {
@@ -13,11 +12,9 @@ const TaxiCashDapp = () => {
   const [amount, setAmount] = useState('');
   const [account, setAccount] = useState(null);
   const [contract, setContract] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
   const [networkError, setNetworkError] = useState(null);
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [feePercentage, setFeePercentage] = useState(null);
-  const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
   const [rewards, setRewards] = useState(0); // Rewards state
   const [referralCode, setReferralCode] = useState(''); // Referral code state
 
@@ -81,9 +78,6 @@ const TaxiCashDapp = () => {
       const taxiCashContract = new ethers.Contract(contractAddress, contractABI, signer);
       setContract(taxiCashContract);
 
-      const ownerAddress = await taxiCashContract.owner();
-      setIsOwner(ownerAddress.toLowerCase() === address.toLowerCase());
-
       setNetworkError(null);
       setWalletDialogOpen(false);
       await fetchRewards(address); // Fetch rewards for the user
@@ -96,7 +90,7 @@ const TaxiCashDapp = () => {
   const fetchRewards = async (address) => {
     if (!contract) return;
     try {
-      const userRewards = await contract.getUserRewards(address); // Replace with actual contract method
+      const userRewards = await contract.getUserRewards(address);
       setRewards(userRewards.toString());
     } catch (error) {
       console.error("Error fetching rewards:", error);
@@ -113,29 +107,34 @@ const TaxiCashDapp = () => {
       alert('Payment sent successfully!');
       await fetchRewards(account); // Update rewards after payment
     } catch (error) {
-        console.error("Error sending payment:", error);
-        alert('Error sending payment. Please check the console for details.');
+      console.error("Error sending payment:", error);
+      alert('Error sending payment. Please check the console for details.');
     }
-};
+  };
 
-const handleReferral = async () => {
+  const handleReferral = async () => {
     if (!contract || !referralCode) return;
     try {
-        const tx = await contract.referUser(referralCode); // Replace with actual contract method
+      const tx = await contract.referUser(referralCode);
       await tx.wait();
       alert('Referral code applied successfully!');
       setReferralCode(''); // Clear input
     } catch (error) {
-        console.error("Error applying referral code:", error);
-        alert('Error applying referral code. Please check the console for details.');
+      console.error("Error applying referral code:", error);
+      alert('Error applying referral code. Please check the console for details.');
     }
-};
+  };
 
-return (
+  return (
     <div className="taxi-cash-app">
       <header className="app-header">
         <h1>TaxiCash</h1>
-        {account && <p className="account">Connected: {account.slice(0, 6)}...{account.slice(-4)}               <Button onClick={() => navigator.clipboard.writeText(account)} variant="outlined">Copy</Button></p>}
+        {account && (
+          <p className="account">
+            Connected: {account.slice(0, 6)}...{account.slice(-4)}   
+            <Button onClick={() => navigator.clipboard.writeText(account)} variant="outlined">Copy</Button>
+          </p>
+        )}
       </header>
       <main>
         <Card className="main-card">
@@ -201,13 +200,6 @@ return (
           <Button onClick={() => connectWallet('celowallet')} fullWidth className="wallet-button">Celo Wallet Extension</Button>
         </DialogContent>
       </Dialog>
-      <Dialog open={qrCodeDialogOpen} onClose={() => setQrCodeDialogOpen(false)}>
-        <DialogTitle>Scan to Pay</DialogTitle>
-        <DialogContent>
-          <QRCodeCanvas value={`ethereum:${recipientAddress}?amount=${amount}`} size={256} />
-        </DialogContent>
-      </Dialog>
-
     </div>
   );
 };
