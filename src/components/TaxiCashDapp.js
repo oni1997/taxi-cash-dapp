@@ -3,7 +3,6 @@ import { ethers } from 'ethers';
 import TaxiCashABI from '../abis/TaxiCash.json';
 import { Button, TextField, Card, CardContent, Typography, Box, Alert, Dialog, DialogTitle, DialogContent } from '@mui/material';
 import { QRCodeCanvas } from 'qrcode.react';
-import { QrReader } from 'react-qr-reader';
 import '../App.css';
 
 const contractAddress = '0x625B60928c1FaE4f779820A889e80586BDD054De';
@@ -19,7 +18,8 @@ const TaxiCashDapp = () => {
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [feePercentage, setFeePercentage] = useState(null);
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
-  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  const [rewards, setRewards] = useState(0); // Rewards state
+  const [referralCode, setReferralCode] = useState(''); // Referral code state
 
   const getFeePercentage = useCallback(async () => {
     if (contract) {
@@ -86,9 +86,20 @@ const TaxiCashDapp = () => {
 
       setNetworkError(null);
       setWalletDialogOpen(false);
+      await fetchRewards(address); // Fetch rewards for the user
     } catch (error) {
       console.error("An error occurred:", error);
       setNetworkError('Failed to connect wallet');
+    }
+  };
+
+  const fetchRewards = async (address) => {
+    if (!contract) return;
+    try {
+      const userRewards = await contract.getUserRewards(address); // Replace with actual contract method
+      setRewards(userRewards.toString());
+    } catch (error) {
+      console.error("Error fetching rewards:", error);
     }
   };
 
@@ -100,43 +111,31 @@ const TaxiCashDapp = () => {
       });
       await tx.wait();
       alert('Payment sent successfully!');
+      await fetchRewards(account); // Update rewards after payment
     } catch (error) {
-      console.error("Error sending payment:", error);
-      alert('Error sending payment. Please check the console for details.');
+        console.error("Error sending payment:", error);
+        alert('Error sending payment. Please check the console for details.');
     }
-  };
+};
 
-  const withdrawFees = async () => {
-    if (!contract || !isOwner) return;
+const handleReferral = async () => {
+    if (!contract || !referralCode) return;
     try {
-      const tx = await contract.withdrawFees();
+        const tx = await contract.referUser(referralCode); // Replace with actual contract method
       await tx.wait();
-      alert('Fees withdrawn successfully!');
+      alert('Referral code applied successfully!');
+      setReferralCode(''); // Clear input
     } catch (error) {
-      console.error("Error withdrawing fees:", error);
-      alert('Error withdrawing fees. Please check the console for details.');
+        console.error("Error applying referral code:", error);
+        alert('Error applying referral code. Please check the console for details.');
     }
-  };
+};
 
-  // Handle QR code scanning
-  const handleScan = (data) => {
-    if (data) {
-      const [address, paymentAmount] = data.split('?amount=');
-      setRecipientAddress(address.replace('ethereum:', ''));
-      setAmount(paymentAmount);
-      setQrScannerOpen(false); // Close the scanner dialog
-    }
-  };
-
-  const handleError = (err) => {
-    console.error(err);
-  };
-
-  return (
+return (
     <div className="taxi-cash-app">
       <header className="app-header">
         <h1>TaxiCash</h1>
-        {account && <p className="account">Connected: {account.slice(0, 6)}...{account.slice(-4)}</p>}
+        {account && <p className="account">Connected: {account.slice(0, 6)}...{account.slice(-4)}               <Button onClick={() => navigator.clipboard.writeText(account)} variant="outlined">Copy</Button></p>}
       </header>
       <main>
         <Card className="main-card">
@@ -145,6 +144,11 @@ const TaxiCashDapp = () => {
             {feePercentage !== null && (
               <Typography variant="body2" className="fee-info">
                 Service Fee: {feePercentage}%
+              </Typography>
+            )}
+            {rewards !== null && (
+              <Typography variant="body2" className="rewards-info">
+                Your Rewards: {rewards}
               </Typography>
             )}
             {!account ? (
@@ -172,23 +176,22 @@ const TaxiCashDapp = () => {
                 <Button variant="contained" onClick={sendPayment} fullWidth className="send-button">
                   Send Payment
                 </Button>
-                <Button variant="outlined" onClick={() => setQrCodeDialogOpen(true)} fullWidth className="qr-button">
-                  Generate QR Code
+                <TextField
+                  label="Referral Code"
+                  variant="outlined"
+                  fullWidth
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  className="input-field"
+                />
+                <Button variant="outlined" onClick={handleReferral} fullWidth className="referral-button">
+                  Apply Referral Code
                 </Button>
-                <Button variant="outlined" onClick={() => setQrScannerOpen(true)} fullWidth className="qr-button">
-                  Scan QR Code
-                </Button>
-                {isOwner && (
-                  <Button variant="outlined" onClick={withdrawFees} fullWidth className="withdraw-button">
-                    Withdraw Fees
-                  </Button>
-                )}
               </Box>
             )}
           </CardContent>
         </Card>
       </main>
-
       <Dialog open={walletDialogOpen} onClose={() => setWalletDialogOpen(false)}>
         <DialogTitle>Select a Wallet</DialogTitle>
         <DialogContent>
@@ -198,7 +201,6 @@ const TaxiCashDapp = () => {
           <Button onClick={() => connectWallet('celowallet')} fullWidth className="wallet-button">Celo Wallet Extension</Button>
         </DialogContent>
       </Dialog>
-
       <Dialog open={qrCodeDialogOpen} onClose={() => setQrCodeDialogOpen(false)}>
         <DialogTitle>Scan to Pay</DialogTitle>
         <DialogContent>
@@ -206,21 +208,6 @@ const TaxiCashDapp = () => {
         </DialogContent>
       </Dialog>
 
-      {/* QR Code Scanner Dialog */}
-      <Dialog open={qrScannerOpen} onClose={() => setQrScannerOpen(false)}>
-        <DialogTitle>Scan QR Code</DialogTitle>
-        <DialogContent>
-          <QrReader
-            delay={300}
-            onError={handleError}
-            onScan={handleScan}
-            style={{ width: '100%' }}
-          />
-          <Button variant="outlined" onClick={() => setQrScannerOpen(false)} fullWidth>
-            Close Scanner
-          </Button>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
