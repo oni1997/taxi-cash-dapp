@@ -10,7 +10,7 @@ function App() {
       <CssBaseline />
       <div className="App">
         <header className="App-header">
-          <h1>TaxiCash Dapp</h1>
+          {/* <h1>TaxiCash Dapp</h1> */}
         </header>
         <main>
           <TaxiCashDapp />

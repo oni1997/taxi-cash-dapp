@@ -1,68 +1,39 @@
-.App {
-  text-align: center;
-  padding: 20px;
-}
-
-.App-header {
-  background-color: #282c34;
-  padding: 20px;
-  color: white;
-}
-
-main {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
 }
 
 .taxi-cash-app {
-  max-width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f5f5f5;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .app-header {
-  background-color: #1976d2;
-  color: white;
-  padding: 20px;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .app-header h1 {
-  margin: 0;
-  font-size: 24px;
+  font-size: 2.5rem;
+  color: #4CAF50; /* Green color for title */
 }
 
 .account {
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-main {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 20px;
+  font-size: 1rem;
+  color: #555;
 }
 
 .main-card {
-  width: 100%;
-  max-width: 400px;
-  background-color: white;
+  background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.network-error {
-  margin-bottom: 20px;
-}
-
-.fee-info {
-  margin-bottom: 20px;
-  font-weight: bold;
+.input-field {
+  margin-bottom: 15px;
 }
 
 .connect-button,
@@ -70,29 +41,55 @@ main {
 .qr-button,
 .withdraw-button,
 .wallet-button {
-  margin-top: 10px !important;
+  margin-top: 10px;
 }
 
-.input-field {
-  margin-bottom: 15px !important;
+.connect-button {
+  background-color: #4CAF50; /* Green */
+  color: white;
 }
 
-.payment-form {
+.send-button {
+  background-color: #2196F3; /* Blue */
+  color: white;
+}
+
+.qr-button {
+  background-color: #FF9800; /* Orange */
+  color: white;
+}
+
+.withdraw-button {
+  background-color: #f44336; /* Red */
+  color: white;
+}
+
+.wallet-button {
+  background-color: #9E9E9E; /* Grey */
+  color: white;
+}
+
+.network-error {
+  margin: 10px 0;
+}
+
+.fee-info {
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+.dialog-title {
+  font-weight: 600;
+}
+
+.dialog-content {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-@media (max-width: 600px) {
-  .app-header h1 {
-    font-size: 20px;
-  }
-
-  main {
-    padding: 10px;
-  }
-
-  .main-card {
-    border-radius: 0;
-    box-shadow: none;
-  }
+.qr-code {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

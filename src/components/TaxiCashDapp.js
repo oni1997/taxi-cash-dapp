@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import TaxiCashABI from '../abis/TaxiCash.json';
 import { Button, TextField, Card, CardContent, Typography, Box, Alert, Dialog, DialogTitle, DialogContent } from '@mui/material';
-import { QRCodeCanvas } from 'qrcode.react'; // Use the named export for QRCodeCanvas
+import { QRCodeCanvas } from 'qrcode.react';
+import { QrReader } from 'react-qr-reader';
+import '../App.css';
 
-const contractAddress = '0x625B60928c1FaE4f779820A889e80586BDD054De'; // Replace with your deployed contract address
+const contractAddress = '0x625B60928c1FaE4f779820A889e80586BDD054De';
 const contractABI = TaxiCashABI;
 
 const TaxiCashDapp = () => {
@@ -17,6 +19,7 @@ const TaxiCashDapp = () => {
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [feePercentage, setFeePercentage] = useState(null);
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
 
   const getFeePercentage = useCallback(async () => {
     if (contract) {
@@ -115,6 +118,20 @@ const TaxiCashDapp = () => {
     }
   };
 
+  // Handle QR code scanning
+  const handleScan = (data) => {
+    if (data) {
+      const [address, paymentAmount] = data.split('?amount=');
+      setRecipientAddress(address.replace('ethereum:', ''));
+      setAmount(paymentAmount);
+      setQrScannerOpen(false); // Close the scanner dialog
+    }
+  };
+
+  const handleError = (err) => {
+    console.error(err);
+  };
+
   return (
     <div className="taxi-cash-app">
       <header className="app-header">
@@ -158,6 +175,9 @@ const TaxiCashDapp = () => {
                 <Button variant="outlined" onClick={() => setQrCodeDialogOpen(true)} fullWidth className="qr-button">
                   Generate QR Code
                 </Button>
+                <Button variant="outlined" onClick={() => setQrScannerOpen(true)} fullWidth className="qr-button">
+                  Scan QR Code
+                </Button>
                 {isOwner && (
                   <Button variant="outlined" onClick={withdrawFees} fullWidth className="withdraw-button">
                     Withdraw Fees
@@ -168,6 +188,7 @@ const TaxiCashDapp = () => {
           </CardContent>
         </Card>
       </main>
+
       <Dialog open={walletDialogOpen} onClose={() => setWalletDialogOpen(false)}>
         <DialogTitle>Select a Wallet</DialogTitle>
         <DialogContent>
@@ -177,10 +198,27 @@ const TaxiCashDapp = () => {
           <Button onClick={() => connectWallet('celowallet')} fullWidth className="wallet-button">Celo Wallet Extension</Button>
         </DialogContent>
       </Dialog>
+
       <Dialog open={qrCodeDialogOpen} onClose={() => setQrCodeDialogOpen(false)}>
         <DialogTitle>Scan to Pay</DialogTitle>
         <DialogContent>
           <QRCodeCanvas value={`ethereum:${recipientAddress}?amount=${amount}`} size={256} />
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Scanner Dialog */}
+      <Dialog open={qrScannerOpen} onClose={() => setQrScannerOpen(false)}>
+        <DialogTitle>Scan QR Code</DialogTitle>
+        <DialogContent>
+          <QrReader
+            delay={300}
+            onError={handleError}
+            onScan={handleScan}
+            style={{ width: '100%' }}
+          />
+          <Button variant="outlined" onClick={() => setQrScannerOpen(false)} fullWidth>
+            Close Scanner
+          </Button>
         </DialogContent>
       </Dialog>
     </div>
